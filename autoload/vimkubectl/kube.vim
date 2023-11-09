@@ -1,23 +1,33 @@
 " LEGACY SYNCHRONOUS FUNCTIONS
 " ----------------------------
 
+
+fun! vimkubectl#kube#system(cmd)
+  let result = system(a:cmd)
+  if v:shell_error > 0
+    return ''
+  else
+    return result
+  endif
+endfun
+
 " Fetch list of all namespaces
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchNamespaces() abort
-  return system(s:craftCmd('get ns -o custom-columns=":metadata.name"'))
+  return vimkubectl#kube#system(s:craftCmd('get ns -o custom-columns=":metadata.name"'))
 endfun
 
 " Fetch list of resource types
 " Note: This uses --cached
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchResourceTypes() abort
-  return system(s:craftCmd(join(['api-resources', '--cached', '-o name'])))
+  return vimkubectl#kube#system(s:craftCmd(join(['api-resources', '--cached', '-o name'])))
 endfun
 
 " Same as above but returns only list of `resourceName`
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchPureResourceList(resourceType, namespace) abort
-  return system(s:craftCmd(
+  return vimkubectl#kube#system(s:craftCmd(
         \ join(['get', a:resourceType, '-o custom-columns=":metadata.name"']),
         \ a:namespace
         \ ))
@@ -25,17 +35,14 @@ endfun
 
 " Get currently active namespace
 fun! vimkubectl#kube#fetchActiveNamespace() abort
-  if v:shell_error !=# 0
-    return ''
-  endif
-  return system(
+  return  vimkubectl#kube#system(
         \ s:craftCmd('get sa default -o ''jsonpath={.metadata.namespace}''')
         \ )
 endfun
 
 " Get currently active context
 fun! vimkubectl#kube#fetchActiveContext() abort
-  return system(
+  return vimkubectl#kube#system(
         \ s:craftCmd('config current-context')
         \ )
 endfun
@@ -43,7 +50,7 @@ endfun
 " Fetch all contexts
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchContexts() abort
-  return system(
+  return vimkubectl#kube#system(
         \ s:craftCmd('config get-contexts -o name')
         \ )
 endfun
